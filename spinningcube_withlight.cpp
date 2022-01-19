@@ -27,6 +27,7 @@ GLint model_location, view_location, proj_location; // Uniforms for transformati
 
 GLint material_ambient_location, material_diffuse_location, material_shininess_location, material_specular_location; // Uniforms para material
 GLint light_pos_location, light_ambient_location, light_diffuse_location, light_specular_location; // Uniforms para la luz
+GLint light_pos_location_2, light_ambient_location_2, light_diffuse_location_2, light_specular_location_2; // Uniforms para la luz
 GLint normal_to_world_location; // Uniform normal matrix
 GLint view_pos_location; // Posicion camara
 
@@ -41,7 +42,8 @@ glm::vec3 camera_pos(0.0f, 0.0f, 3.0f);
 glm::vec3 second_cube_pos(0.5f, 1.0f, 0.0f);
 
 // Lighting1
-glm::vec3 light_pos(0.0f, 0.0f, 2.0f);
+glm::vec3 light_pos(2.0f, -1.0f, 1.0f);
+glm::vec3 light_pos_2(0.0f, 1.0f, 0.0f);
 glm::vec3 light_ambient(0.2f, 0.2f, 0.2f);
 glm::vec3 light_diffuse(0.5f, 0.5f, 0.5f);
 glm::vec3 light_specular(1.0f, 1.0f, 1.0f);
@@ -257,6 +259,12 @@ int main() {
   light_diffuse_location = glGetUniformLocation(shader_program, "light.diffuse");
   light_specular_location = glGetUniformLocation(shader_program, "light.specular");
 
+  // light components
+  light_pos_location_2 = glGetUniformLocation(shader_program, "light2.position");
+  light_ambient_location_2 = glGetUniformLocation(shader_program, "light2.ambient");
+  light_diffuse_location_2 = glGetUniformLocation(shader_program, "light2.diffuse");
+  light_specular_location_2 = glGetUniformLocation(shader_program, "light2.specular");
+
 // Render loop
   while(!glfwWindowShouldClose(window)) {
 
@@ -289,11 +297,11 @@ void render(double currentTime) {
 
   model_matrix = glm::mat4(1.f);
   view_matrix = glm::lookAt(                 camera_pos,  // pos
-                            glm::vec3(0.0f, 0.0f, 0.0f),  // target
+                            glm::vec3(0.0f, 0.2f, 0.0f),  // target
                             glm::vec3(0.0f, 1.0f, 0.0f)); // up
 
   model_matrix = glm::rotate(model_matrix,
-                          glm::radians(10.0f),
+                          glm::radians(15.0f),
                           glm::vec3(0.0f, 1.0f, 0.0f));
   model_matrix = glm::rotate(model_matrix,
                           glm::radians(25.0f),
@@ -328,6 +336,11 @@ void render(double currentTime) {
   glUniform3fv(light_ambient_location, 1, glm::value_ptr(light_ambient));
   glUniform3fv(light_diffuse_location, 1, glm::value_ptr(light_diffuse));
   glUniform3fv(light_specular_location, 1, glm::value_ptr(light_specular));
+
+  glUniform3fv(light_pos_location_2, 1, glm::value_ptr(light_pos_2));
+  glUniform3fv(light_ambient_location_2, 1, glm::value_ptr(light_ambient));
+  glUniform3fv(light_diffuse_location_2, 1, glm::value_ptr(light_diffuse));
+  glUniform3fv(light_specular_location_2, 1, glm::value_ptr(light_specular));
 
   glDrawArrays(GL_TRIANGLES, 0, 36);
 
