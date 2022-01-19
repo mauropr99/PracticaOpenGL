@@ -21,7 +21,7 @@ int gl_height = 480;
 
 void glfw_window_size_callback(GLFWwindow* window, int width, int height);
 void processInput(GLFWwindow *window);
-void render(double, unsigned int);
+void render(double, unsigned int, unsigned int);
 unsigned int loadTexture(char const * );
 
 GLuint shader_program = 0; // shader program to set render pipeline
@@ -55,7 +55,7 @@ glm::vec3 light_specular(1.0f, 1.0f, 1.0f);
 glm::vec3 material_ambient(1.0f, 0.5f, 0.31f);
 glm::vec3 material_diffuse(1.0f, 0.5f, 0.31f);
 glm::vec3 material_specular(0.5f, 0.5f, 0.5f);
-const GLfloat material_shininess = 32.0f;
+const GLfloat material_shininess = 64.0f;
 
 int main() {
   // start GL context and O/S window using the GLFW helper library
@@ -277,17 +277,17 @@ int main() {
 
   // load textures (we now use a utility function to keep the code more organized)
   // -----------------------------------------------------------------------------
-  unsigned int diffuseMap = loadTexture("./container2.png");
+  unsigned int diffuseMap = loadTexture("container2.png");
+  unsigned int specularMap = loadTexture("container2_specular.png");
 
-  glUniform1i(material_diffuse_location, 0);
-
+  
 
 // Render loop
   while(!glfwWindowShouldClose(window)) {
 
     processInput(window);
 
-    render(glfwGetTime(), diffuseMap);
+    render(glfwGetTime(), diffuseMap, specularMap);
 
     glfwSwapBuffers(window);
 
@@ -299,7 +299,7 @@ int main() {
   return 0;
 }
 
-void render(double currentTime, unsigned int diffuseMap) {
+void render(double currentTime, unsigned int diffuseMap, unsigned int specularMap) {
   float f = (float)currentTime * 0.3f;
 
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -346,7 +346,7 @@ void render(double currentTime, unsigned int diffuseMap) {
 
   // glUniform3fv(material_ambient_location, 1, glm::value_ptr(material_ambient));
   // glUniform3fv(material_diffuse_location, 1, glm::value_ptr(material_diffuse));
-  glUniform3fv(material_specular_location, 1, glm::value_ptr(material_specular));
+  // glUniform3fv(material_specular_location, 1, glm::value_ptr(material_specular));
   glUniform1f(material_shininess_location, material_shininess);
 
   glUniform3fv(light_pos_location, 1, glm::value_ptr(light_pos));
@@ -359,11 +359,20 @@ void render(double currentTime, unsigned int diffuseMap) {
   glUniform3fv(light_diffuse_location_2, 1, glm::value_ptr(light_diffuse));
   glUniform3fv(light_specular_location_2, 1, glm::value_ptr(light_specular));
 
+  glUniform1i(material_diffuse_location, 0);
+  glUniform1i(material_specular_location, 1);
+
   // bind diffuse map
   glActiveTexture(GL_TEXTURE0);
   glBindTexture(GL_TEXTURE_2D, diffuseMap);
 
+  // bind specular map
+  glActiveTexture(GL_TEXTURE1);
+  glBindTexture(GL_TEXTURE_2D, specularMap);
+
   glDrawArrays(GL_TRIANGLES, 0, 36);
+
+  
 
   // Dibujamos segundo cubo
   model_matrix = glm::mat4(1.f);
@@ -387,9 +396,15 @@ void render(double currentTime, unsigned int diffuseMap) {
   glUniformMatrix4fv(model_location, 1, GL_FALSE, glm::value_ptr(model_matrix));
   glUniformMatrix3fv(normal_to_world_location, 1, GL_FALSE, glm::value_ptr(normal_matrix));
 
+  glUniform1i(material_diffuse_location, 0);
+  glUniform1i(material_specular_location, 1);
+ 
   // bind diffuse map
   glActiveTexture(GL_TEXTURE0);
   glBindTexture(GL_TEXTURE_2D, diffuseMap);
+  // bind specular map
+  glActiveTexture(GL_TEXTURE1);
+  glBindTexture(GL_TEXTURE_2D, specularMap);
 
   glDrawArrays(GL_TRIANGLES, 0, 36);
 }
@@ -405,12 +420,13 @@ void glfw_window_size_callback(GLFWwindow* window, int width, int height) {
   gl_height = height;
   printf("New viewport: (width: %d, height: %d)\n", width, height);
 }
-
+// utility function for loading a 2D texture from file
+// ---------------------------------------------------
 unsigned int loadTexture(char const * path)
 {
     unsigned int textureID;
     glGenTextures(1, &textureID);
-    
+
     int width, height, nrComponents;
     unsigned char *data = stbi_load(path, &width, &height, &nrComponents, 0);
     if (data)
@@ -442,3 +458,4 @@ unsigned int loadTexture(char const * path)
 
     return textureID;
 }
+
