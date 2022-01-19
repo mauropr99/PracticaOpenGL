@@ -35,9 +35,12 @@ const char *vertexFileName = "spinningcube_withlight_vs.glsl";
 const char *fragmentFileName = "spinningcube_withlight_fs.glsl";
 
 // Camera
-glm::vec3 camera_pos(0.0f, 1.0f, 1.0f);
+glm::vec3 camera_pos(0.0f, 0.0f, 3.0f);
 
-// Lighting
+// Second cube pos
+glm::vec3 second_cube_pos(0.5f, 1.0f, 0.0f);
+
+// Lighting1
 glm::vec3 light_pos(0.0f, 0.0f, 2.0f);
 glm::vec3 light_ambient(0.2f, 0.2f, 0.2f);
 glm::vec3 light_diffuse(0.5f, 0.5f, 0.5f);
@@ -288,19 +291,16 @@ void render(double currentTime) {
   view_matrix = glm::lookAt(                 camera_pos,  // pos
                             glm::vec3(0.0f, 0.0f, 0.0f),  // target
                             glm::vec3(0.0f, 1.0f, 0.0f)); // up
+
+  model_matrix = glm::rotate(model_matrix,
+                          glm::radians(10.0f),
+                          glm::vec3(0.0f, 1.0f, 0.0f));
+  model_matrix = glm::rotate(model_matrix,
+                          glm::radians(25.0f),
+                          glm::vec3(1.0f, 1.0f, 0.0f));
   
   // model_matrix = glm::translate(model_matrix, glm::vec3(0.0f, 0.0f, 0.0f));
 
-  // Moving cube
-  // model_matrix = glm::rotate(model_matrix,
-  //   [...]
-  //
-  model_matrix = glm::rotate(model_matrix,
-                          glm::radians((float)currentTime * 45.0f),
-                          glm::vec3(0.0f, 1.0f, 0.0f));
-  model_matrix = glm::rotate(model_matrix,
-                          glm::radians((float)currentTime * 81.0f),
-                          glm::vec3(1.0f, 0.0f, 0.0f));
   // Projection
   // proj_matrix = glm::perspective(glm::radians(50.0f),
   //   [...]
@@ -328,6 +328,30 @@ void render(double currentTime) {
   glUniform3fv(light_ambient_location, 1, glm::value_ptr(light_ambient));
   glUniform3fv(light_diffuse_location, 1, glm::value_ptr(light_diffuse));
   glUniform3fv(light_specular_location, 1, glm::value_ptr(light_specular));
+
+  glDrawArrays(GL_TRIANGLES, 0, 36);
+
+  // Dibujamos segundo cubo
+  model_matrix = glm::mat4(1.f);
+  model_matrix = glm::translate(model_matrix, second_cube_pos);
+  model_matrix = glm::scale(model_matrix, glm::vec3(0.4f));
+
+  // Moving cube
+  // model_matrix = glm::rotate(model_matrix,
+  //   [...]
+  //
+  model_matrix = glm::rotate(model_matrix,
+                          glm::radians((float)currentTime * 45.0f),
+                          glm::vec3(0.0f, 1.0f, 0.0f));
+  model_matrix = glm::rotate(model_matrix,
+                          glm::radians((float)currentTime * 81.0f),
+                          glm::vec3(1.0f, 0.0f, 0.0f));
+
+  // Normal matrix: normal vectors to world coordinates
+  normal_matrix = glm::transpose(glm::inverse(glm::mat3(model_matrix)));
+
+  glUniformMatrix4fv(model_location, 1, GL_FALSE, glm::value_ptr(model_matrix));
+  glUniformMatrix3fv(normal_to_world_location, 1, GL_FALSE, glm::value_ptr(normal_matrix));
 
   glDrawArrays(GL_TRIANGLES, 0, 36);
 }
